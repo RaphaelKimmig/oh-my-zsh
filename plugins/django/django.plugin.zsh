@@ -203,7 +203,17 @@ _managepy-commands() {
     'testserver:Runs a development server with data from the given fixture(s).'
     'validate:Validates all installed models.'
   )
-  
+ 
+  for cmd in $(./manage.py --help 2>&1 | \
+      #awk -vdrop=1 '{ if (!drop) print substr($0, 3) } /^Available subcommands/ { drop=0 }')
+  awk -vdrop=1 '{ if (!drop && /^[^\[]/) print $1 } /^Available subcommands/ { drop=0 }')
+      do
+          if ! echo $commands | grep -qs "${cmd}:"
+          then
+              commands+=($cmd)
+          fi
+      done
+       
   _describe -t commands 'manage.py command' commands && ret=0
 }
 
